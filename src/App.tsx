@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { MousePointer2, Trash2, History, CheckCircle2, XCircle, Trophy, RefreshCcw, Eye, EyeOff, Play, Layers, Gamepad2, ArrowRight } from 'lucide-react';
+import { MousePointer2, Trash2, History, CheckCircle2, XCircle, Trophy, RefreshCcw, Eye, EyeOff, Play, Layers, Gamepad2, ArrowRight, ArrowLeft, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 /**
@@ -78,8 +78,8 @@ export default function App() {
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
   const [roundsHistory, setRoundsHistory] = useState<string[][]>([[], [], [], [], []]);
   const [gameStatus, setGameStatus] = useState<'IDLE' | 'PLAYING' | 'RESULT'>('IDLE');
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [showTarget, setShowTarget] = useState(false);
+  const [score, setScore] = useState(0);
+  const [maxScore, setMaxScore] = useState(0);
   const [direction, setDirection] = useState(0); // 1 for right, -1 for left
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -90,7 +90,8 @@ export default function App() {
     setGameStatus('IDLE');
     setCurrentRoundIndex(0);
     setRoundsHistory([[], [], [], [], []]);
-    setIsCorrect(null);
+    setScore(0);
+    setMaxScore(0);
     setDirection(0);
     
     // Phát âm thanh bắt đầu
@@ -122,31 +123,36 @@ export default function App() {
     if (!selectedLevel || currentRoundIndex >= 4) return;
     setDirection(1);
     setCurrentRoundIndex(prev => prev + 1);
-    setShowTarget(false);
   };
 
-  // So sánh chuỗi người chơi đã chọn với đáp án
+  // Quay lại round trước
+  const prevRound = () => {
+    if (!selectedLevel || currentRoundIndex <= 0) return;
+    setDirection(-1);
+    setCurrentRoundIndex(prev => prev - 1);
+  };
+
+  // So sánh chuỗi người chơi đã chọn với đáp án và tính điểm
   const checkResult = () => {
     if (!selectedLevel) return;
 
-    let allCorrect = true;
+    let totalPoints = 0;
+    let totalPossible = 0;
+
     for (let i = 0; i < selectedLevel.rounds.length; i++) {
       const target = selectedLevel.rounds[i];
       const player = roundsHistory[i];
+      totalPossible += target.length;
       
-      if (player.length !== target.length) {
-        allCorrect = false;
-        break;
-      }
-      
-      const match = player.every((val, index) => val === target[index]);
-      if (!match) {
-        allCorrect = false;
-        break;
+      for (let j = 0; j < target.length; j++) {
+        if (player[j] === target[j]) {
+          totalPoints += 1;
+        }
       }
     }
 
-    setIsCorrect(allCorrect);
+    setScore(totalPoints);
+    setMaxScore(totalPossible);
     setGameStatus('RESULT');
   };
 
@@ -156,8 +162,7 @@ export default function App() {
     setRoundsHistory([[], [], [], [], []]);
     setCurrentRoundIndex(0);
     setGameStatus('IDLE');
-    setIsCorrect(null);
-    setShowTarget(false);
+    setScore(0);
     setDirection(0);
   };
 
@@ -166,8 +171,7 @@ export default function App() {
     setRoundsHistory([[], [], [], [], []]);
     setCurrentRoundIndex(0);
     setGameStatus('IDLE');
-    setIsCorrect(null);
-    setShowTarget(false);
+    setScore(0);
     setDirection(0);
   };
 
@@ -220,7 +224,7 @@ export default function App() {
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 300 : direction < 0 ? -300 : 0,
+      x: direction > 0 ? 200 : direction < 0 ? -200 : 0,
       opacity: 0
     }),
     center: {
@@ -230,7 +234,7 @@ export default function App() {
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? 300 : direction > 0 ? -300 : 0,
+      x: direction < 0 ? 200 : direction > 0 ? -200 : 0,
       opacity: 0
     })
   };
@@ -258,60 +262,76 @@ export default function App() {
           <div className="w-16 md:w-[100px]"></div> {/* Spacer */}
         </div>
         
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div 
-            key={currentRoundIndex}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
-            }}
-            className="bg-white border-2 md:border-4 border-red-100 rounded-2xl md:rounded-[2rem] p-3 md:p-6 shadow-xl relative overflow-hidden mx-2"
-          >
-            <div className="absolute top-0 left-0 bg-red-600 text-white px-3 md:px-6 py-0.5 md:py-1 rounded-br-xl md:rounded-br-2xl font-black text-[10px] md:text-xs uppercase tracking-widest">
-              {selectedLevel.name} - Round {currentRoundIndex + 1}/5
-            </div>
+        <div className="bg-white border-2 md:border-4 border-red-100 rounded-2xl md:rounded-[2rem] p-3 md:p-6 shadow-xl relative overflow-hidden mx-2">
+          <div className="absolute top-0 left-0 bg-red-600 text-white px-3 md:px-6 py-0.5 md:py-1 rounded-br-xl md:rounded-br-2xl font-black text-[10px] md:text-xs uppercase tracking-widest z-20">
+            {selectedLevel.name} - Round {currentRoundIndex + 1}/5
+          </div>
+
+          <AnimatePresence mode="popLayout" custom={direction}>
+            <motion.div 
+              key={currentRoundIndex}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 800, damping: 60, mass: 0.5 },
+                opacity: { duration: 0.1 }
+              }}
+              className="w-full"
+            >
+              {/* Hiển thị các ô ký tự sau khi nhập */}
+              <div className="flex flex-wrap justify-center gap-1.5 md:gap-3 mt-3 md:mt-4">
+                {currentRoundSequence.map((_, idx) => {
+                  const word = currentRoundHistory[idx];
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`w-10 h-12 md:w-14 md:h-16 rounded-lg md:rounded-xl border-2 flex items-center justify-center font-black text-sm md:text-xl transition-all duration-200
+                        ${word 
+                          ? (word === "Mèo" ? 'bg-red-600 border-red-700 text-white shadow-md' : 'bg-slate-900 border-slate-950 text-white shadow-md')
+                          : 'bg-slate-50 border-dashed border-slate-200 text-slate-300'
+                        }
+                      `}
+                    >
+                      {word || idx + 1}
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="mt-3 md:mt-6 flex items-center justify-center gap-4 md:gap-8 relative z-10">
+            <button 
+              onClick={prevRound}
+              disabled={currentRoundIndex === 0}
+              className="p-2 md:p-3 bg-slate-100 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-slate-100 disabled:hover:text-slate-400 transition-all cursor-pointer"
+            >
+              <ArrowLeft size={20} md:size={24} />
+            </button>
             
-            {/* Hiển thị các ô dấu hỏi hoặc đáp án khi giữ chuột */}
-            <div className="flex flex-wrap justify-center gap-1.5 md:gap-3 mt-3 md:mt-4">
-              {currentRoundSequence.map((word, idx) => (
-                <div 
-                  key={idx} 
-                  className={`w-10 h-12 md:w-14 md:h-16 rounded-lg md:rounded-xl border-2 flex items-center justify-center font-black text-sm md:text-xl transition-all duration-500
-                    ${showTarget 
-                      ? (word === "Mèo" ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-100 border-slate-300 text-slate-900')
-                      : 'bg-slate-50 border-dashed border-slate-200 text-slate-300'
-                    }
-                  `}
-                >
-                  {showTarget ? word : "?"}
-                </div>
-              ))}
+            <div className="flex flex-col items-center">
+              <p className="text-slate-500 font-bold italic text-[10px] md:text-sm text-center">
+                 Nhập chuỗi ký tự theo trí nhớ
+              </p>
+              <div className="mt-1 flex gap-1">
+                {roundsHistory.map((h, i) => (
+                  <div key={i} className={`w-2 h-2 rounded-full ${i === currentRoundIndex ? 'bg-red-600' : h.length > 0 ? 'bg-red-200' : 'bg-slate-200'}`} />
+                ))}
+              </div>
             </div>
 
-            <div className="mt-3 md:mt-6 flex flex-col items-center gap-2 md:gap-4">
-              <p className="text-slate-500 font-bold italic text-[10px] md:text-sm text-center">
-                 Đáp án đã ẩn! Hãy nhấn 8 bước theo trí nhớ của bạn.
-              </p>
-              {/* Nút giữ để xem đề bài */}
-              <button 
-                onMouseDown={() => setShowTarget(true)}
-                onMouseUp={() => setShowTarget(false)}
-                onMouseLeave={() => setShowTarget(false)}
-                onTouchStart={() => setShowTarget(true)}
-                onTouchEnd={() => setShowTarget(false)}
-                className="flex items-center gap-1 md:gap-2 text-red-500 font-black text-[10px] md:text-sm uppercase hover:text-red-700 transition-colors select-none p-1.5 md:p-2 border-2 border-transparent hover:border-red-100 rounded-lg cursor-pointer"
-              >
-                {showTarget ? <EyeOff size={14} /> : <Eye size={14} />}
-                {showTarget ? "Đang hiện đề..." : "Giữ để xem lại đề"}
-              </button>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+            <button 
+              onClick={nextRound}
+              disabled={currentRoundIndex === 4}
+              className="p-2 md:p-3 bg-slate-100 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-slate-100 disabled:hover:text-slate-400 transition-all cursor-pointer"
+            >
+              <ArrowRight size={20} md:size={24} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Khu vực lựa chọn Mèo/Chó */}
@@ -361,66 +381,47 @@ export default function App() {
                   }} 
                   className="text-slate-400 hover:text-red-500 transition-colors font-bold text-xs md:text-base flex items-center gap-1 cursor-pointer"
                 >
-                  <Trash2 size={14} /> Xóa
+                  <Trash2 size={14} /> Xóa Round
                 </button>
               )}
            </div>
         </div>
 
-        <div className="min-h-[60px] md:min-h-[100px] bg-slate-50 rounded-xl md:rounded-2xl p-3 md:p-6 border-2 border-dashed border-slate-200 flex flex-wrap gap-1.5 md:gap-3 items-center content-start">
-          {currentRoundHistory.map((word, idx) => (
-            <span key={idx} className={`px-3 py-1 md:px-5 md:py-2 rounded-lg md:rounded-2xl font-black text-xs md:text-xl shadow-md
-              ${word === "Mèo" ? 'bg-red-600 text-white' : 'bg-slate-900 text-white'}
-            `}>
-              {word}
-            </span>
-          ))}
-          {currentRoundHistory.length === 0 && (
-            <div className="w-full text-center py-2 text-slate-400 italic text-[10px] md:text-sm">
-               Bắt đầu chọn...
-            </div>
-          )}
-        </div>
-
-        {/* Nút chuyển round hoặc kiểm tra kết quả */}
-        {gameStatus === 'PLAYING' && currentRoundHistory.length === currentRoundSequence.length && (
+        {/* Nút kiểm tra kết quả */}
+        {gameStatus !== 'RESULT' && (
           <div className="mt-4 md:mt-8 flex justify-center">
-            {currentRoundIndex < 4 ? (
-              <button 
-                onClick={nextRound}
-                className="px-8 py-3 md:px-12 md:py-4 bg-red-600 text-white font-black text-lg md:text-2xl rounded-xl md:rounded-2xl shadow-[0_4px_0_0_rgba(185,28,28,1)] md:shadow-[0_8px_0_0_rgba(185,28,28,1)] hover:translate-y-[-2px] active:translate-y-[4px] active:shadow-none transition-all flex items-center gap-2 md:gap-3 animate-bounce cursor-pointer"
-              >
-                TIẾP THEO <ArrowRight size={20} md:size={28} />
-              </button>
-            ) : (
-              <button 
-                onClick={checkResult}
-                className="px-8 py-3 md:px-12 md:py-4 bg-emerald-500 text-white font-black text-lg md:text-2xl rounded-xl md:rounded-2xl shadow-[0_4px_0_0_rgba(16,185,129,1)] md:shadow-[0_8px_0_0_rgba(16,185,129,1)] hover:translate-y-[-2px] active:translate-y-[4px] active:shadow-none transition-all flex items-center gap-2 md:gap-3 animate-bounce cursor-pointer"
-              >
-                <CheckCircle2 size={20} /> KIỂM TRA
-              </button>
-            )}
+            <button 
+              onClick={checkResult}
+              className="px-8 py-3 md:px-12 md:py-4 bg-emerald-500 text-white font-black text-lg md:text-2xl rounded-xl md:rounded-2xl shadow-[0_4px_0_0_rgba(16,185,129,1)] md:shadow-[0_8px_0_0_rgba(16,185,129,1)] hover:translate-y-[-2px] active:translate-y-[4px] active:shadow-none transition-all flex items-center gap-2 md:gap-3 cursor-pointer"
+            >
+              <CheckCircle2 size={20} /> KIỂM TRA TẤT CẢ
+            </button>
           </div>
         )}
 
         {/* Hiển thị thông báo Thắng/Thua */}
         {gameStatus === 'RESULT' && (
           <div className={`mt-4 md:mt-8 p-4 md:p-8 rounded-xl md:rounded-[2rem] border-2 md:border-4 flex flex-col items-center
-            ${isCorrect ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-red-50 border-red-500 text-red-700'}
+            ${score === maxScore ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-slate-50 border-slate-500 text-slate-700'}
           `}>
-            {isCorrect ? (
-              <>
-                <Trophy size={40} className="mb-2 md:mb-4 text-yellow-500 animate-bounce" />
-                <h2 className="text-2xl md:text-5xl font-black mb-1 md:mb-2 uppercase italic">Tuyệt vời!</h2>
-                <p className="font-bold text-sm md:text-xl mb-4 md:mb-8 text-center">Trí nhớ xuất sắc.</p>
-              </>
-            ) : (
-              <>
-                <XCircle size={40} className="mb-2 md:mb-4 text-red-500" />
-                <h2 className="text-2xl md:text-5xl font-black mb-1 md:mb-2 uppercase italic text-center">Sai rồi!</h2>
-                <p className="font-bold text-sm md:text-xl mb-4 md:mb-8 text-center">Thử lại nhé.</p>
-              </>
-            )}
+            <div className="flex flex-col items-center mb-4 md:mb-8">
+              <div className="relative">
+                <Trophy size={60} md:size={100} className={`${score === maxScore ? 'text-yellow-500 animate-bounce' : 'text-slate-300'}`} />
+                <div className="absolute -top-2 -right-2 bg-red-600 text-white w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black text-xs md:text-xl border-2 border-white shadow-lg">
+                  <Star size={14} md:size={20} fill="currentColor" />
+                </div>
+              </div>
+              <h2 className="text-3xl md:text-6xl font-black mt-4 uppercase italic">KẾT QUẢ</h2>
+              <div className="flex items-baseline gap-1 md:gap-2 mt-2">
+                <span className="text-4xl md:text-7xl font-black text-red-600">{score}</span>
+                <span className="text-xl md:text-3xl font-bold text-slate-400">/ {maxScore} điểm</span>
+              </div>
+            </div>
+
+            <p className="font-bold text-sm md:text-xl mb-6 md:mb-10 text-center max-w-md">
+              {score === maxScore ? "Tuyệt vời! Bạn đã nhớ chính xác toàn bộ 40 ký tự." : `Bạn đã đúng ${score} ký tự. Hãy cố gắng hơn ở lần sau nhé!`}
+            </p>
+
             <div className="flex gap-2 md:gap-4">
               <button 
                 onClick={resetCurrentLevel}
@@ -430,7 +431,7 @@ export default function App() {
               </button>
               <button 
                 onClick={resetToMenu}
-                className="px-8 py-4 bg-red-600 text-white font-black text-sm md:text-xl rounded-xl md:rounded-2xl flex items-center gap-1 md:gap-2 hover:scale-105 transition-all shadow-xl cursor-pointer"
+                className="px-4 py-2 md:px-8 md:py-4 bg-red-600 text-white font-black text-sm md:text-xl rounded-xl md:rounded-2xl flex items-center gap-1 md:gap-2 hover:scale-105 transition-all shadow-xl cursor-pointer"
               >
                 <Layers size={16} /> ĐỔI ĐỀ
               </button>
@@ -438,6 +439,8 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Hiệu ứng trang trí nền */}
 
       {/* Hiệu ứng trang trí nền */}
       <div className="fixed -bottom-20 -left-20 w-80 h-80 bg-red-200/30 rounded-full blur-[100px] -z-10"></div>
