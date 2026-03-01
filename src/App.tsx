@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { MousePointer2, Trash2, History, CheckCircle2, XCircle, Trophy, RefreshCcw, Eye, EyeOff, Play, Layers, Gamepad2 } from 'lucide-react';
+import { MousePointer2, Trash2, History, CheckCircle2, XCircle, Trophy, RefreshCcw, Eye, EyeOff, Play, Layers, Gamepad2, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 /**
  * Thành phần chính của trò chơi Say A Word game.
@@ -13,21 +14,73 @@ export default function App() {
   // Âm thanh bắt đầu
   const START_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3";
 
-  // Danh sách 5 đề khác nhau
+  // Danh sách 5 đề khác nhau, mỗi đề có 5 round
   const LEVELS = [
-    { id: 1, name: "Đề 1", sequence: ["Mèo", "Chó", "Mèo", "Chó", "Chó", "Chó", "Mèo", "Mèo"] },
-    { id: 2, name: "Đề 2", sequence: ["Chó", "Chó", "Mèo", "Mèo", "Chó", "Mèo", "Chó", "Mèo"] },
-    { id: 3, name: "Đề 3", sequence: ["Mèo", "Mèo", "Mèo", "Chó", "Chó", "Chó", "Mèo", "Chó"] },
-    { id: 4, name: "Đề 4", sequence: ["Chó", "Mèo", "Chó", "Mèo", "Mèo", "Chó", "Chó", "Mèo"] },
-    { id: 5, name: "Đề 5", sequence: ["Mèo", "Chó", "Chó", "Mèo", "Chó", "Mèo", "Mèo", "Chó"] },
+    { 
+      id: 1, 
+      name: "Bộ đề 1", 
+      rounds: [
+        ["Mèo", "Chó", "Mèo", "Chó", "Chó", "Chó", "Mèo", "Mèo"],
+        ["Chó", "Mèo", "Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó"],
+        ["Mèo", "Mèo", "Chó", "Chó", "Mèo", "Mèo", "Chó", "Chó"],
+        ["Chó", "Chó", "Chó", "Mèo", "Mèo", "Mèo", "Chó", "Mèo"],
+        ["Mèo", "Chó", "Mèo", "Mèo", "Chó", "Chó", "Mèo", "Chó"]
+      ] 
+    },
+    { 
+      id: 2, 
+      name: "Bộ đề 2", 
+      rounds: [
+        ["Chó", "Chó", "Mèo", "Mèo", "Chó", "Mèo", "Chó", "Mèo"],
+        ["Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó"],
+        ["Chó", "Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó", "Mèo"],
+        ["Mèo", "Mèo", "Mèo", "Mèo", "Chó", "Chó", "Chó", "Chó"],
+        ["Chó", "Chó", "Mèo", "Mèo", "Chó", "Chó", "Mèo", "Mèo"]
+      ] 
+    },
+    { 
+      id: 3, 
+      name: "Bộ đề 3", 
+      rounds: [
+        ["Mèo", "Mèo", "Mèo", "Chó", "Chó", "Chó", "Mèo", "Chó"],
+        ["Chó", "Mèo", "Mèo", "Mèo", "Chó", "Chó", "Chó", "Mèo"],
+        ["Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó"],
+        ["Chó", "Chó", "Mèo", "Mèo", "Chó", "Chó", "Mèo", "Mèo"],
+        ["Mèo", "Mèo", "Chó", "Chó", "Mèo", "Mèo", "Chó", "Chó"]
+      ] 
+    },
+    { 
+      id: 4, 
+      name: "Bộ đề 4", 
+      rounds: [
+        ["Chó", "Mèo", "Chó", "Mèo", "Mèo", "Chó", "Chó", "Mèo"],
+        ["Mèo", "Chó", "Mèo", "Chó", "Chó", "Mèo", "Mèo", "Chó"],
+        ["Chó", "Chó", "Chó", "Chó", "Mèo", "Mèo", "Mèo", "Mèo"],
+        ["Mèo", "Mèo", "Mèo", "Mèo", "Chó", "Chó", "Chó", "Chó"],
+        ["Chó", "Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó", "Mèo"]
+      ] 
+    },
+    { 
+      id: 5, 
+      name: "Bộ đề 5", 
+      rounds: [
+        ["Mèo", "Chó", "Chó", "Mèo", "Chó", "Mèo", "Mèo", "Chó"],
+        ["Chó", "Mèo", "Mèo", "Chó", "Mèo", "Chó", "Chó", "Mèo"],
+        ["Mèo", "Mèo", "Chó", "Chó", "Mèo", "Mèo", "Chó", "Chó"],
+        ["Chó", "Chó", "Mèo", "Mèo", "Chó", "Chó", "Mèo", "Mèo"],
+        ["Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó", "Mèo", "Chó"]
+      ] 
+    },
   ];
 
   // Quản lý trạng thái trò chơi
   const [selectedLevel, setSelectedLevel] = useState<typeof LEVELS[0] | null>(null);
-  const [history, setHistory] = useState<string[]>([]);
+  const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
+  const [roundsHistory, setRoundsHistory] = useState<string[][]>([[], [], [], [], []]);
   const [gameStatus, setGameStatus] = useState<'IDLE' | 'PLAYING' | 'RESULT'>('IDLE');
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [showTarget, setShowTarget] = useState(false);
+  const [direction, setDirection] = useState(0); // 1 for right, -1 for left
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -35,8 +88,10 @@ export default function App() {
   const handleStartGame = (level: typeof LEVELS[0]) => {
     setSelectedLevel(level);
     setGameStatus('IDLE');
-    setHistory([]);
+    setCurrentRoundIndex(0);
+    setRoundsHistory([[], [], [], [], []]);
     setIsCorrect(null);
+    setDirection(0);
     
     // Phát âm thanh bắt đầu
     if (!audioRef.current) {
@@ -52,43 +107,68 @@ export default function App() {
     
     if (gameStatus === 'IDLE') setGameStatus('PLAYING');
     
-    const newHistory = [...history, type];
-    // Giới hạn số lần nhấn bằng đúng độ dài đề bài
-    if (newHistory.length <= selectedLevel.sequence.length) {
-      setHistory(newHistory);
+    const currentRoundSequence = selectedLevel.rounds[currentRoundIndex];
+    const currentRoundHistory = roundsHistory[currentRoundIndex];
+    
+    if (currentRoundHistory.length < currentRoundSequence.length) {
+      const newRoundsHistory = [...roundsHistory];
+      newRoundsHistory[currentRoundIndex] = [...currentRoundHistory, type];
+      setRoundsHistory(newRoundsHistory);
     }
+  };
+
+  // Chuyển sang round tiếp theo
+  const nextRound = () => {
+    if (!selectedLevel || currentRoundIndex >= 4) return;
+    setDirection(1);
+    setCurrentRoundIndex(prev => prev + 1);
+    setShowTarget(false);
   };
 
   // So sánh chuỗi người chơi đã chọn với đáp án
   const checkResult = () => {
     if (!selectedLevel) return;
 
-    if (history.length !== selectedLevel.sequence.length) {
-      setIsCorrect(false);
-      setGameStatus('RESULT');
-      return;
+    let allCorrect = true;
+    for (let i = 0; i < selectedLevel.rounds.length; i++) {
+      const target = selectedLevel.rounds[i];
+      const player = roundsHistory[i];
+      
+      if (player.length !== target.length) {
+        allCorrect = false;
+        break;
+      }
+      
+      const match = player.every((val, index) => val === target[index]);
+      if (!match) {
+        allCorrect = false;
+        break;
+      }
     }
 
-    const match = history.every((val, index) => val === selectedLevel.sequence[index]);
-    setIsCorrect(match);
+    setIsCorrect(allCorrect);
     setGameStatus('RESULT');
   };
 
   // Làm mới trò chơi về trạng thái ban đầu (về màn hình chọn đề)
   const resetToMenu = () => {
     setSelectedLevel(null);
-    setHistory([]);
+    setRoundsHistory([[], [], [], [], []]);
+    setCurrentRoundIndex(0);
     setGameStatus('IDLE');
     setIsCorrect(null);
     setShowTarget(false);
+    setDirection(0);
   };
 
   // Làm mới màn chơi hiện tại
   const resetCurrentLevel = () => {
-    setHistory([]);
+    setRoundsHistory([[], [], [], [], []]);
+    setCurrentRoundIndex(0);
     setGameStatus('IDLE');
     setIsCorrect(null);
     setShowTarget(false);
+    setDirection(0);
   };
 
   // Màn hình chọn bộ đề
@@ -135,6 +215,26 @@ export default function App() {
     );
   }
 
+  const currentRoundSequence = selectedLevel.rounds[currentRoundIndex];
+  const currentRoundHistory = roundsHistory[currentRoundIndex];
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : direction < 0 ? -300 : 0,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 300 : direction > 0 ? -300 : 0,
+      opacity: 0
+    })
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-50 text-slate-900 font-sans flex flex-col items-center p-2 md:p-8 overflow-y-auto overflow-x-hidden">
       
@@ -158,46 +258,60 @@ export default function App() {
           <div className="w-16 md:w-[100px]"></div> {/* Spacer */}
         </div>
         
-        <div className="bg-white border-2 md:border-4 border-red-100 rounded-2xl md:rounded-[2rem] p-3 md:p-6 shadow-xl relative overflow-hidden mx-2">
-          <div className="absolute top-0 left-0 bg-red-600 text-white px-3 md:px-6 py-0.5 md:py-1 rounded-br-xl md:rounded-br-2xl font-black text-[10px] md:text-xs uppercase tracking-widest">
-            {selectedLevel.name} (Ẩn danh)
-          </div>
-          
-          {/* Hiển thị các ô dấu hỏi hoặc đáp án khi giữ chuột */}
-          <div className="flex flex-wrap justify-center gap-1.5 md:gap-3 mt-3 md:mt-4">
-            {selectedLevel.sequence.map((word, idx) => (
-              <div 
-                key={idx} 
-                className={`w-10 h-12 md:w-14 md:h-16 rounded-lg md:rounded-xl border-2 flex items-center justify-center font-black text-sm md:text-xl transition-all duration-500
-                  ${showTarget 
-                    ? (word === "Mèo" ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-100 border-slate-300 text-slate-900')
-                    : 'bg-slate-50 border-dashed border-slate-200 text-slate-300'
-                  }
-                `}
-              >
-                {showTarget ? word : "?"}
-              </div>
-            ))}
-          </div>
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div 
+            key={currentRoundIndex}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
+            }}
+            className="bg-white border-2 md:border-4 border-red-100 rounded-2xl md:rounded-[2rem] p-3 md:p-6 shadow-xl relative overflow-hidden mx-2"
+          >
+            <div className="absolute top-0 left-0 bg-red-600 text-white px-3 md:px-6 py-0.5 md:py-1 rounded-br-xl md:rounded-br-2xl font-black text-[10px] md:text-xs uppercase tracking-widest">
+              {selectedLevel.name} - Round {currentRoundIndex + 1}/5
+            </div>
+            
+            {/* Hiển thị các ô dấu hỏi hoặc đáp án khi giữ chuột */}
+            <div className="flex flex-wrap justify-center gap-1.5 md:gap-3 mt-3 md:mt-4">
+              {currentRoundSequence.map((word, idx) => (
+                <div 
+                  key={idx} 
+                  className={`w-10 h-12 md:w-14 md:h-16 rounded-lg md:rounded-xl border-2 flex items-center justify-center font-black text-sm md:text-xl transition-all duration-500
+                    ${showTarget 
+                      ? (word === "Mèo" ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-100 border-slate-300 text-slate-900')
+                      : 'bg-slate-50 border-dashed border-slate-200 text-slate-300'
+                    }
+                  `}
+                >
+                  {showTarget ? word : "?"}
+                </div>
+              ))}
+            </div>
 
-          <div className="mt-3 md:mt-6 flex flex-col items-center gap-2 md:gap-4">
-            <p className="text-slate-500 font-bold italic text-[10px] md:text-sm text-center">
-               Đáp án đã ẩn! Hãy nhấn 8 bước theo trí nhớ của bạn.
-            </p>
-            {/* Nút giữ để xem đề bài */}
-            <button 
-              onMouseDown={() => setShowTarget(true)}
-              onMouseUp={() => setShowTarget(false)}
-              onMouseLeave={() => setShowTarget(false)}
-              onTouchStart={() => setShowTarget(true)}
-              onTouchEnd={() => setShowTarget(false)}
-              className="flex items-center gap-1 md:gap-2 text-red-500 font-black text-[10px] md:text-sm uppercase hover:text-red-700 transition-colors select-none p-1.5 md:p-2 border-2 border-transparent hover:border-red-100 rounded-lg cursor-pointer"
-            >
-              {showTarget ? <EyeOff size={14} /> : <Eye size={14} />}
-              {showTarget ? "Đang hiện đề..." : "Giữ để xem lại đề"}
-            </button>
-          </div>
-        </div>
+            <div className="mt-3 md:mt-6 flex flex-col items-center gap-2 md:gap-4">
+              <p className="text-slate-500 font-bold italic text-[10px] md:text-sm text-center">
+                 Đáp án đã ẩn! Hãy nhấn 8 bước theo trí nhớ của bạn.
+              </p>
+              {/* Nút giữ để xem đề bài */}
+              <button 
+                onMouseDown={() => setShowTarget(true)}
+                onMouseUp={() => setShowTarget(false)}
+                onMouseLeave={() => setShowTarget(false)}
+                onTouchStart={() => setShowTarget(true)}
+                onTouchEnd={() => setShowTarget(false)}
+                className="flex items-center gap-1 md:gap-2 text-red-500 font-black text-[10px] md:text-sm uppercase hover:text-red-700 transition-colors select-none p-1.5 md:p-2 border-2 border-transparent hover:border-red-100 rounded-lg cursor-pointer"
+              >
+                {showTarget ? <EyeOff size={14} /> : <Eye size={14} />}
+                {showTarget ? "Đang hiện đề..." : "Giữ để xem lại đề"}
+              </button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Khu vực lựa chọn Mèo/Chó */}
@@ -206,7 +320,7 @@ export default function App() {
           onClick={() => handleInteraction("Mèo")}
           disabled={gameStatus === 'RESULT'}
           className={`group relative overflow-hidden rounded-2xl md:rounded-[3rem] border-4 md:border-[10px] transition-all duration-100 transform active:scale-95 shadow-xl disabled:opacity-50 cursor-pointer h-full min-h-[120px] md:min-h-[200px]
-            ${history[history.length-1] === "Mèo" && gameStatus !== 'RESULT' ? 'border-red-500 scale-105 z-10' : 'border-white hover:border-red-100'}
+            ${currentRoundHistory[currentRoundHistory.length-1] === "Mèo" && gameStatus !== 'RESULT' ? 'border-red-500 scale-105 z-10' : 'border-white hover:border-red-100'}
           `}
         >
           <img src={CAT_IMAGE} alt="Mèo" className="w-full h-full object-cover select-none pointer-events-none transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
@@ -220,7 +334,7 @@ export default function App() {
           onClick={() => handleInteraction("Chó")}
           disabled={gameStatus === 'RESULT'}
           className={`group relative overflow-hidden rounded-2xl md:rounded-[3rem] border-4 md:border-[10px] transition-all duration-100 transform active:scale-95 shadow-xl disabled:opacity-50 cursor-pointer h-full min-h-[120px] md:min-h-[200px]
-            ${history[history.length-1] === "Chó" && gameStatus !== 'RESULT' ? 'border-slate-900 scale-105 z-10' : 'border-white hover:border-slate-200'}
+            ${currentRoundHistory[currentRoundHistory.length-1] === "Chó" && gameStatus !== 'RESULT' ? 'border-slate-900 scale-105 z-10' : 'border-white hover:border-slate-200'}
           `}
         >
           <img src={DOG_IMAGE} alt="Chó" className="w-full h-full object-cover select-none pointer-events-none transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
@@ -235,11 +349,18 @@ export default function App() {
       <div className="w-full max-w-4xl bg-white rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 shadow-2xl border-2 md:border-4 border-slate-100 mb-4 md:mb-8 relative mx-2">
         <div className="flex justify-between items-center mb-3 md:mb-6">
            <h3 className="font-black text-slate-800 uppercase tracking-widest flex items-center gap-1 md:gap-2 text-xs md:text-base">
-             <History className="text-red-600" size={16} /> {history.length}/{selectedLevel.sequence.length}
+             <History className="text-red-600" size={16} /> Round {currentRoundIndex + 1}: {currentRoundHistory.length}/{currentRoundSequence.length}
            </h3>
            <div className="flex gap-3">
-              {history.length > 0 && gameStatus !== 'RESULT' && (
-                <button onClick={resetCurrentLevel} className="text-slate-400 hover:text-red-500 transition-colors font-bold text-xs md:text-base flex items-center gap-1 cursor-pointer">
+              {currentRoundHistory.length > 0 && gameStatus !== 'RESULT' && (
+                <button 
+                  onClick={() => {
+                    const newRoundsHistory = [...roundsHistory];
+                    newRoundsHistory[currentRoundIndex] = [];
+                    setRoundsHistory(newRoundsHistory);
+                  }} 
+                  className="text-slate-400 hover:text-red-500 transition-colors font-bold text-xs md:text-base flex items-center gap-1 cursor-pointer"
+                >
                   <Trash2 size={14} /> Xóa
                 </button>
               )}
@@ -247,29 +368,38 @@ export default function App() {
         </div>
 
         <div className="min-h-[60px] md:min-h-[100px] bg-slate-50 rounded-xl md:rounded-2xl p-3 md:p-6 border-2 border-dashed border-slate-200 flex flex-wrap gap-1.5 md:gap-3 items-center content-start">
-          {history.map((word, idx) => (
+          {currentRoundHistory.map((word, idx) => (
             <span key={idx} className={`px-3 py-1 md:px-5 md:py-2 rounded-lg md:rounded-2xl font-black text-xs md:text-xl shadow-md
               ${word === "Mèo" ? 'bg-red-600 text-white' : 'bg-slate-900 text-white'}
             `}>
               {word}
             </span>
           ))}
-          {history.length === 0 && (
+          {currentRoundHistory.length === 0 && (
             <div className="w-full text-center py-2 text-slate-400 italic text-[10px] md:text-sm">
                Bắt đầu chọn...
             </div>
           )}
         </div>
 
-        {/* Nút kiểm tra kết quả */}
-        {gameStatus === 'PLAYING' && history.length === selectedLevel.sequence.length && (
+        {/* Nút chuyển round hoặc kiểm tra kết quả */}
+        {gameStatus === 'PLAYING' && currentRoundHistory.length === currentRoundSequence.length && (
           <div className="mt-4 md:mt-8 flex justify-center">
-            <button 
-              onClick={checkResult}
-              className="px-8 py-3 md:px-12 md:py-4 bg-emerald-500 text-white font-black text-lg md:text-2xl rounded-xl md:rounded-2xl shadow-[0_4px_0_0_rgba(16,185,129,1)] md:shadow-[0_8px_0_0_rgba(16,185,129,1)] hover:translate-y-[-2px] active:translate-y-[4px] active:shadow-none transition-all flex items-center gap-2 md:gap-3 animate-bounce cursor-pointer"
-            >
-              <CheckCircle2 size={20} /> KIỂM TRA
-            </button>
+            {currentRoundIndex < 4 ? (
+              <button 
+                onClick={nextRound}
+                className="px-8 py-3 md:px-12 md:py-4 bg-red-600 text-white font-black text-lg md:text-2xl rounded-xl md:rounded-2xl shadow-[0_4px_0_0_rgba(185,28,28,1)] md:shadow-[0_8px_0_0_rgba(185,28,28,1)] hover:translate-y-[-2px] active:translate-y-[4px] active:shadow-none transition-all flex items-center gap-2 md:gap-3 animate-bounce cursor-pointer"
+              >
+                TIẾP THEO <ArrowRight size={20} md:size={28} />
+              </button>
+            ) : (
+              <button 
+                onClick={checkResult}
+                className="px-8 py-3 md:px-12 md:py-4 bg-emerald-500 text-white font-black text-lg md:text-2xl rounded-xl md:rounded-2xl shadow-[0_4px_0_0_rgba(16,185,129,1)] md:shadow-[0_8px_0_0_rgba(16,185,129,1)] hover:translate-y-[-2px] active:translate-y-[4px] active:shadow-none transition-all flex items-center gap-2 md:gap-3 animate-bounce cursor-pointer"
+              >
+                <CheckCircle2 size={20} /> KIỂM TRA
+              </button>
+            )}
           </div>
         )}
 
